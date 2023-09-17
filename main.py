@@ -1,9 +1,14 @@
 import webbrowser
 import pyautogui
+import keyboard
 import time
 import cv2
 import tensorflow as tf
+from selenium import webdriver
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.common.by import By
 
+from compiler.compile import Compile
 from move_net.estimation import input_size, movenet
 from move_net.helper import draw_prediction_on_image
 from move_net.image_utils import get_vector_from_frame
@@ -36,17 +41,14 @@ def main():
 
     shifty_collection = Collection(collection_name)
 
-    url = "https://replit.com/join/fmrnbraiil-rudrakshmonga1"
-    webbrowser.open(url)
-
-    time.sleep(5)
-
-    pyautogui.click(x=558, y=318)
-    pyautogui.write("print('Hello Worlddd!')", interval=0.01)
-
     vid = cv2.VideoCapture(1)
     frame_interval = 3  # Set the frame capture interval in seconds
     start_time = time.time()
+
+    compiler = Compile(pyautogui)
+
+    open_browser = False
+    driver = webdriver.Chrome()
 
     while True:
         current_time = time.time()
@@ -74,14 +76,29 @@ def main():
 
         cv2.imshow('frame', frame)
 
+        if not open_browser:
+            url = "https://replit.com/join/fmrnbraiil-rudrakshmonga1"
+            driver.get(url)
+            time.sleep(10)
+            input_element = driver.find_element(By.XPATH, '//*[@id="9bec1a14-36e9-47f0-951a-05df08b691d1"]/div[1]')
+            input_element.click()
+            input_element.send_keys("inside while loop bb")
+            # pyautogui.click(x=309, y=254)
+            # pyautogui.write("inside while loop")
+            open_browser = True
+
         if time_left <= 0:
             # Capture a frame and reset the start time for the next frame capture
             ret, frame = vid.read()
-
+            keyboard.write('enter')
             vector_representation = get_vector_from_frame(frame)
             closest_pose = search_for_pose(vector_representation, shifty_collection)
 
-            print(closest_pose)
+            # Remove the .jpg extension
+            closest_pose = closest_pose.replace('.jpg', '')
+            # print("closest pose: ", closest_pose)
+            # compiler.add_operation(closest_pose)
+            pyautogui.write(closest_pose)
 
             start_time = time.time()
 
